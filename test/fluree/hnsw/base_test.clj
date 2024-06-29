@@ -34,7 +34,7 @@
 
 (deftest large-vector-insertion-test
   (testing "Inserting a large number of vectors into the HNSW index."
-    (let [article-vecs  (test-utils/large-articles-vectors 1000)
+    (let [article-vecs  (test-utils/large-articles-vectors 2000)
           index         (hnsw/create {:max-layers     6
                                       :metric         :dotproduct
                                       :max-k          16
@@ -48,5 +48,5 @@
           recall        (test-utils/measure-recall flat-rank-res search-res)]
       #_(println "recall: " recall)
 
-      (is (> recall (float 0.25))
-          "Some overlap in recall."))))
+      (is (> recall (float 0.88))
+          "Recall should be relatively high with larger vector sets."))))

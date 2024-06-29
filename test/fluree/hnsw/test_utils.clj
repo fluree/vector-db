@@ -65,11 +65,19 @@
   special logic omits the open/close vectors [] in the file to parse each map individually."
   ([] (large-articles-dataset nil nil))
   ([limit offset]
-   (let [files ["010000.edn" "020000.edn" "030000.edn" "040000.edn" "050000.edn"
-                "060000.edn" "070000.edn" "080000.edn" "090000.edn" "100000.edn"
-                "110000.edn" "120000.edn" "130000.edn" "140000.edn" "150000.edn"
-                "160000.edn" "170000.edn" "180000.edn" "190000.edn" "200000.edn" "209527.edn"]]
-     (cond->> (mapcat #(edn/read-string (slurp (str "test-resources/200K-news-dataset-all-MiniLM-L6-v2/" %))) files)
+   (let [files            ["010000.edn" "020000.edn" "030000.edn" "040000.edn" "050000.edn"
+                           "060000.edn" "070000.edn" "080000.edn" "090000.edn" "100000.edn"
+                           "110000.edn" "120000.edn" "130000.edn" "140000.edn" "150000.edn"
+                           "160000.edn" "170000.edn" "180000.edn" "190000.edn" "200000.edn" "209527.edn"]
+         ;; most of the time we are grabbing from the first file, so check and only parse that if needed (for speed)
+         first-file-total (Integer/parseInt (re-find #"\d+" (first files)))
+         first-file-only? (if (and limit offset)
+                            (< (+ limit offset) first-file-total)
+                            (if limit
+                              (< limit first-file-total)))]
+     (cond->> files
+              first-file-only? (take 1)
+              true (mapcat #(edn/read-string (slurp (str "test-resources/200K-news-dataset-all-MiniLM-L6-v2/" %))))
               offset (drop offset)
               limit (take limit)))))
 
