@@ -59,13 +59,13 @@
                entry-point      starting-point
                layers*          layers]
           (if-let [next-layer-id (first insertion-layers)]
-            (let [layer        (get layers* next-layer-id) #_(db/get-layer db next-layer-id)
+            (let [layer        (get layers* next-layer-id)
                   entry-point* (layer/item layer (item/id entry-point)) ;; update entry-point for the current layer (might have different edges than prior layer entry point)
                   candidates   (search/search-layer layer new-item entry-point* efConstruction)
-                  max-k*       (if (= next-layer-id 0) ;; for base layer, double insertion points
+                  max-k*       (if (= next-layer-id 0) ;; for base layer, double neighbors/edges
                                  (* 2 max-k)
                                  max-k)
-                  neighbors    (take max-k* candidates) ;; TODO - how different should max-k be than efConstruction? - is there a reasonable default we can use?
+                  neighbors    (take max-k* candidates)
                   layer*       (add-edges layer max-k* new-item neighbors)]
               (recur (rest insertion-layers)
                      (first neighbors)

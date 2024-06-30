@@ -11,7 +11,7 @@
                                      :metric         :dotproduct
                                      :max-k          16
                                      :level-factor   4
-                                     :efConstruction 32})
+                                     :efConstruction 100})
           db           (hnsw/upsert index article-vecs)]
 
       (testing " have 100% recall with result size of 5"
@@ -34,19 +34,19 @@
 
 (deftest large-vector-insertion-test
   (testing "Inserting a large number of vectors into the HNSW index."
-    (let [article-vecs  (test-utils/large-articles-vectors 2000)
+    (let [article-vecs  (test-utils/large-articles-vectors 2500)
           index         (hnsw/create {:max-layers     6
                                       :metric         :dotproduct
                                       :max-k          16
                                       :level-factor   4
-                                      :efConstruction 32})
+                                      :efConstruction 100})
           db            (hnsw/upsert index article-vecs)
           query         {:vector (get test-utils/query-embeddings "AI use in digital devices")
                          :top-k  100}
           search-res    (time (hnsw/search db query))
           flat-rank-res (test-utils/flat-rank db query)
           recall        (test-utils/measure-recall flat-rank-res search-res)]
-      #_(println "recall: " recall)
+      (println "recall: " recall)
 
-      (is (> recall (float 0.88))
+      (is (> recall (float 0.9))
           "Recall should be relatively high with larger vector sets."))))

@@ -2,3 +2,4 @@
 /.nrepl-port
 *.iml
 /.idea/
+.DS_Store
