@@ -120,7 +120,7 @@
                               (into neighbors))
                 nearest*  (->> (into nearest neighbors)
                                (trim-nearest limit))
-                visited*  (conj visited (item/id next-c))]
+                visited*  (into visited (map item/id neighbors))]
             (recur nearest* cands* visited*)))))))
 
 (defn entrance-point
