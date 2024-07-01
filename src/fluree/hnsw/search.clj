@@ -77,9 +77,10 @@
 (defn neighborhood
   "Returns edges of provided item as a list with
   score metric from query-item added to each"
-  [layer item query-item]
+  [layer item query-item visited]
   (->> (get layer (item/id item))
        (item/edges)
+       (remove #(contains? visited %))
        (map #(get layer %))
        (map #(add-score % query-item))))
 
@@ -113,8 +114,7 @@
                         (farther? next-c (farthest-s nearest))))]
         (if done?
           (take limit nearest)
-          (let [neighbors (-> (neighborhood layer next-c query-item)
-                              (remove-visited visited))
+          (let [neighbors (neighborhood layer next-c query-item visited)
                 cands*    (-> cands
                               (disj next-c)
                               (into neighbors))
