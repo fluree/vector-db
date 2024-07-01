@@ -18,17 +18,19 @@
 (defn add-edges
   [layer max-k new-item neighbors]
   ;; first add neighbors as edges to new item, and add to layer
-  (let [new-item* (item/replace-edges new-item (into #{} (map item/id neighbors)))
-        new-id    (item/id new-item*)
-        layer*    (assoc layer new-id new-item*)]
+  (let [new-item*      (item/replace-edges new-item (into #{} (map item/id neighbors)))
+        new-id         (item/id new-item*)
+        layer*         (assoc layer new-id new-item*)
+        neighbor-items (pmap (fn [neighbor]
+                               (-> (item/add-edge neighbor new-id)
+                                   (shrink-edges layer* max-k)))
+                             neighbors)]
     ;; iterate over each neighbor and add the new item as an edge
     (reduce
-     (fn [layer neighbor]
-       (let [neighbor* (-> (item/add-edge neighbor new-id)
-                           (shrink-edges layer max-k))]
-         (assoc layer (item/id neighbor) neighbor*)))
+     (fn [layer neighbor-item]
+       (assoc layer (item/id neighbor-item) neighbor-item))
      layer*
-     neighbors)))
+     neighbor-items)))
 
 (defn first-insert
   "First insert puts the new item at every layer,
