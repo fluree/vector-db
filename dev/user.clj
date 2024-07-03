@@ -3,9 +3,9 @@
             [fluree.hnsw.item :as item]
             [fluree.hnsw.layer :as layer]
             [fluree.hnsw.db :as db]
-            [clojure.data.json :as json]
             [mikera.vectorz.core :as v]
             [fluree.hnsw.test-utils :as test-utils]
+            [criterium.core :as criterium]
             [djl.embedding :as embed]))
 
 (def model (embed/model "djl://ai.djl.huggingface.pytorch/sentence-transformers/all-MiniLM-L6-v2"))

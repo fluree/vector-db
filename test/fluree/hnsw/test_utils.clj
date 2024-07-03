@@ -1,8 +1,7 @@
 (ns fluree.hnsw.test-utils
-  (:require [clojure.edn :as edn]
-            [clojure.java.io :as io]
+  (:require [clojure.java.io :as io]
             [clojure.set :as set]
-            [clojure.string :as str]
+            [charred.api :as charred]
             [clojure.test :refer :all]
             [fluree.hnsw.db :as db]
             [fluree.hnsw.item :as item]))
@@ -44,9 +43,9 @@
   "35 news articles in edn with embeddings created by MiniLM-L6-v2
   on the summary."
   []
-  (-> (io/resource "articles-all-MiniLM-L6-v2.edn")
+  (-> (io/resource "articles-all-MiniLM-L6-v2.json")
       slurp
-      edn/read-string))
+      (charred/read-json :key-fn keyword)))
 
 (defn small-articles-vectors
   "Returns the small-articles-dataset as transactions for the HNSW index."
@@ -65,10 +64,10 @@
   special logic omits the open/close vectors [] in the file to parse each map individually."
   ([] (large-articles-dataset nil nil))
   ([limit offset]
-   (let [files            ["010000.edn" "020000.edn" "030000.edn" "040000.edn" "050000.edn"
-                           "060000.edn" "070000.edn" "080000.edn" "090000.edn" "100000.edn"
-                           "110000.edn" "120000.edn" "130000.edn" "140000.edn" "150000.edn"
-                           "160000.edn" "170000.edn" "180000.edn" "190000.edn" "200000.edn" "209527.edn"]
+   (let [files            ["010000.json" "020000.json" "030000.json" "040000.json" "050000.json"
+                           "060000.json" "070000.json" "080000.json" "090000.json" "100000.json"
+                           "110000.json" "120000.json" "130000.json" "140000.json" "150000.json"
+                           "160000.json" "170000.json" "180000.json" "190000.json" "200000.json" "209527.json"]
          ;; most of the time we are grabbing from the first file, so check and only parse that if needed (for speed)
          first-file-total (Integer/parseInt (re-find #"\d+" (first files)))
          first-file-only? (if (and limit offset)
@@ -77,7 +76,7 @@
                               (< limit first-file-total)))]
      (cond->> files
               first-file-only? (take 1)
-              true (mapcat #(edn/read-string (slurp (str "test-resources/200K-news-dataset-all-MiniLM-L6-v2/" %))))
+              true (mapcat #(charred/read-json (slurp (str "test-resources/200K-news-dataset-all-MiniLM-L6-v2/" %)) :key-fn keyword))
               offset (drop offset)
               limit (take limit)))))
 
@@ -94,4 +93,3 @@
      (mapv (fn [{:keys [id summary-embedding]}]
              {:id id :values (vec summary-embedding)})
            ds))))
-
