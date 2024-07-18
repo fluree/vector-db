@@ -1,10 +1,10 @@
 (ns user
-  (:require [fluree.hnsw :as hnsw]
-            [fluree.hnsw.item :as item]
-            [fluree.hnsw.layer :as layer]
-            [fluree.hnsw.db :as db]
+  (:require [fluree.vector.hnsw :as hnsw]
+            [fluree.vector.hnsw.item :as item]
+            [fluree.vector.hnsw.layer :as layer]
+            [fluree.vector.hnsw.db :as db]
             [mikera.vectorz.core :as v]
-            [fluree.hnsw.test-utils :as test-utils]
+            [fluree.vector.hnsw.test-utils :as test-utils]
             [criterium.core :as criterium]
             [djl.embedding :as embed]))
 
