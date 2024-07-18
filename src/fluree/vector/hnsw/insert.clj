@@ -1,8 +1,8 @@
-(ns fluree.hnsw.insert
-  (:require [fluree.hnsw.item :as item]
-            [fluree.hnsw.search :as search]
-            [fluree.hnsw.layer :as layer]
-            [fluree.hnsw.db :as db]))
+(ns fluree.vector.hnsw.insert
+  (:require [fluree.vector.hnsw.item :as item]
+            [fluree.vector.hnsw.search :as search]
+            [fluree.vector.hnsw.layer :as layer]
+            [fluree.vector.hnsw.db :as db]))
 
 (set! *warn-on-reflection* true)
 

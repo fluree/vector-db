@@ -1,22 +1,22 @@
-(ns fluree.hnsw.base-test
+(ns fluree.vector.hnsw.base-test
   (:require [clojure.test :refer :all]
-            [fluree.hnsw.test-utils :as test-utils]
-            [fluree.hnsw :as hnsw]))
+            [fluree.vector.hnsw.test-utils :as test-utils]
+            [fluree.vector.hnsw :as hnsw]))
 
 
 (deftest recall-test
   (testing "HNSW index has expected recall rates."
-    (let [article-vecs (test-utils/small-articles-vectors)
+    (let [article-vecs (vec (test-utils/small-articles-vectors))
           index        (hnsw/create {:max-layers     4
                                      :metric         :dotproduct
                                      :max-k          16
                                      :level-factor   4
                                      :efConstruction 100})
-          db           (hnsw/upsert index article-vecs)]
+          db           (hnsw/upsert index (take 100 article-vecs))]
 
       (testing " have 100% recall with result size of 5"
         (let [samples       10 ;; creates db this many times to measure recall
-              dbs           (take samples (repeatedly (fn [] (hnsw/upsert index article-vecs))))
+              dbs           (take samples (repeatedly (fn [] (hnsw/upsert index (take 100 article-vecs)))))
               top-k         5
               query         {:vector (get test-utils/query-embeddings "AI use in digital devices")
                              :top-k  top-k}

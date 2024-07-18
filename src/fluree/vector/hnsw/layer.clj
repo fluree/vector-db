@@ -1,6 +1,6 @@
-(ns fluree.hnsw.layer
+(ns fluree.vector.hnsw.layer
   (:require [clojure.math :as math]
-            [fluree.hnsw.item :as item]))
+            [fluree.vector.hnsw.item :as item]))
 
 (set! *warn-on-reflection* true)
 

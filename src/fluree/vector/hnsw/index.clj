@@ -1,4 +1,4 @@
-(ns fluree.hnsw.index
+(ns fluree.vector.hnsw.index
   (:refer-clojure :exclude [empty?]))
 
 (set! *warn-on-reflection* true)

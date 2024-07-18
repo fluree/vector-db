@@ -1,8 +1,8 @@
-(ns fluree.hnsw
-  (:require [fluree.hnsw.search :as search]
-            [fluree.hnsw.insert :as insert]
-            [fluree.hnsw.index :as index]
-            [fluree.hnsw.db :as db]
+(ns fluree.vector.hnsw
+  (:require [fluree.vector.hnsw.search :as search]
+            [fluree.vector.hnsw.insert :as insert]
+            [fluree.vector.hnsw.index :as index]
+            [fluree.vector.hnsw.db :as db]
             [mikera.vectorz.core :as v]))
 
 (set! *warn-on-reflection* true)

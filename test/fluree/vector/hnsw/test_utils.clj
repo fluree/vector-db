@@ -1,10 +1,10 @@
-(ns fluree.hnsw.test-utils
+(ns fluree.vector.hnsw.test-utils
   (:require [clojure.java.io :as io]
             [clojure.set :as set]
             [charred.api :as charred]
             [clojure.test :refer :all]
-            [fluree.hnsw.db :as db]
-            [fluree.hnsw.item :as item]))
+            [fluree.vector.hnsw.db :as db]
+            [fluree.vector.hnsw.item :as item]))
 
 ;; embeddings prepared with all-MiniLM-L6-v2 transformer
 (def query-embeddings

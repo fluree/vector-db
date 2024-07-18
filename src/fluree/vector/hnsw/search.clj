@@ -1,6 +1,6 @@
-(ns fluree.hnsw.search
-  (:require [fluree.hnsw.db :as db]
-            [fluree.hnsw.item :as item]
+(ns fluree.vector.hnsw.search
+  (:require [fluree.vector.hnsw.db :as db]
+            [fluree.vector.hnsw.item :as item]
             [clojure.data.avl :as avl]))
 
 (set! *warn-on-reflection* true)

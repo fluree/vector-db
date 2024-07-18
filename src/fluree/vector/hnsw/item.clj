@@ -1,4 +1,4 @@
-(ns fluree.hnsw.item
+(ns fluree.vector.hnsw.item
   (:require [mikera.vectorz.core :as v])
   (:refer-clojure :exclude [vector]))
 

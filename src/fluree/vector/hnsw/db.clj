@@ -1,5 +1,5 @@
-(ns fluree.hnsw.db
-  (:require [fluree.hnsw.layer :as layer])
+(ns fluree.vector.hnsw.db
+  (:require [fluree.vector.hnsw.layer :as layer])
   (:refer-clojure :exclude [empty?]))
 
 (set! *warn-on-reflection* true)
