@@ -162,37 +162,48 @@
           (recur (rest doc-vec*)))))))
 
 (defn calc-term-score
-  [k1 b avg-doc-len doc-len term-f]
-  (/ (* term-f (+ k1 1))
-     (+ term-f (* k1 (+ (- 1 b) (* b (/ doc-len
-                                        avg-doc-len)))))))
+  [k1 b avg-doc-len doc-len term-idf term-f]
+  (* term-idf
+     (/ (* term-f (+ k1 1))
+        (+ term-f (* k1 (+ (- 1 b) (* b (/ doc-len
+                                           avg-doc-len))))))))
 
 (defn calc-doc-score
   [k1 b avg-length query-vec doc-vec]
   (let [doc-len (get-doc-length doc-vec)]
-    (loop [[query-term & r] query-vec
+    (loop [[[query-term term-idf] & r] query-vec
            doc-vec doc-vec
            score   0.0]
       (if query-term
         (let [[doc-vec* term-f] (seek-term query-term doc-vec)
               score* (if term-f
                        (+ score
-                          (calc-term-score k1 b avg-length doc-len term-f))
+                          (calc-term-score k1 b avg-length doc-len term-idf term-f))
                        score)]
           (if doc-vec*
             (recur r doc-vec* score*)
             score*))
         score))))
 
+(defn parse-query
+  "Based on query text, returns vector of two-tuples that include
+  [term-sparse-vec-index term-inverse-document-frequency]
+
+  Only returns terms that are in the index."
+  [query terms stemmer stopwords]
+  (let [q-terms (->> (parse-sentence query stemmer stopwords)
+                     (distinct))]
+    (reduce
+     (fn [acc term]
+       (if-let [term-match (get terms term)] ;; won't match term if not in index
+         (conj acc [(:idx term-match) (:idf term-match)])
+         acc))
+     []
+     q-terms)))
+
 (defn search
-  [{:keys [stemmer stopwords vectors k1 b avg-length terms] :as bm25} query]
-  (let [query-vec (->> (parse-sentence query stemmer stopwords)
-                       (distinct)
-                       ;; TODO: should be able to remove frequencies below, with distinct they will all be '1'
-                       (frequencies)
-                       (vectorize-item terms)
-                       ;; TODO - once 'vectorize' item is done for query-specific, below simulates us building the vector of just terms in the query, no frequencies
-                       (map first))]
+  [{:keys [stemmer stopwords vectors k1 b avg-length terms] :as _bm25} query]
+  (let [query-vec (parse-query query terms stemmer stopwords)]
     (->> vectors
          (reduce-kv
           (fn [acc doc-id doc-vec]
