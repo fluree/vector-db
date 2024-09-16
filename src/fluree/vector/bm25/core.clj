@@ -71,7 +71,6 @@
             term-map    (if existing
                           (update existing :items conj id)
                           {:idx   dimensions ;; sparse vector index location
-                           :idf   nil ;; will be filled in after all items are indexed
                            :items #{id}})
             dimensions* (if existing
                           dimensions
@@ -86,20 +85,6 @@
         item-count* (inc item-count)
         avg-len*    (/ total-len* item-count*)]
     [avg-len* item-count*]))
-
-(defn update-idf
-  [item-count terms]
-  (let [terms*
-        (reduce-kv
-         (fn [acc term {:keys [items] :as term-map}]
-           (let [idf* (Math/log
-                       (+ (/ (+ (- item-count (count items)) 0.5)
-                             (+ (count items) 0.5))
-                          1))]
-             (assoc acc term (assoc term-map :idf idf*))))
-         terms
-         terms)]
-    terms*))
 
 (defn vectorize-item
   "Vectorizes an item's parsed term frequency
@@ -124,10 +109,9 @@
         term-freq      (frequencies item-terms)
         terms-distinct (keys term-freq)
         [terms* dimensions*] (update-terms terms dimensions id terms-distinct)
-        terms**        (update-idf item-count* terms*)
-        item-vec       (vectorize-item terms** term-freq)]
+        item-vec       (vectorize-item terms* term-freq)]
     (-> bm25
-        (assoc :terms terms**
+        (assoc :terms terms*
                :dimensions dimensions*
                :avg-length avg-length*
                :item-count item-count*)
@@ -185,25 +169,31 @@
             score*))
         score))))
 
+(defn calc-idf
+  [item-count n-instances]
+  (Math/log
+   (+ 1 (/ (+ (- item-count n-instances) 0.5)
+           (+ n-instances 0.5)))))
+
 (defn parse-query
   "Based on query text, returns vector of two-tuples that include
-  [term-sparse-vec-index term-inverse-document-frequency]
+  [term-sparse-vec-index n-times-term-appears-in-items]
 
   Only returns terms that are in the index."
-  [query terms stemmer stopwords]
+  [query terms item-count stemmer stopwords]
   (let [q-terms (->> (parse-sentence query stemmer stopwords)
                      (distinct))]
     (reduce
      (fn [acc term]
        (if-let [term-match (get terms term)] ;; won't match term if not in index
-         (conj acc [(:idx term-match) (:idf term-match)])
+         (conj acc [(:idx term-match) (calc-idf item-count (count (:items term-match)))])
          acc))
      []
      q-terms)))
 
 (defn search
-  [{:keys [stemmer stopwords vectors k1 b avg-length terms] :as _bm25} query]
-  (let [query-vec (parse-query query terms stemmer stopwords)]
+  [{:keys [stemmer stopwords item-count vectors k1 b avg-length terms] :as _bm25} query]
+  (let [query-vec (parse-query query terms item-count stemmer stopwords)]
     (->> vectors
          (reduce-kv
           (fn [acc doc-id doc-vec]
