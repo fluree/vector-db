@@ -73,10 +73,55 @@
                :item-count item-count*)
         (assoc-in [:vectors id] item-vec))))
 
-(defn index-items
-  [bm25 items]
-  (loop [[item & r] items
+(defn assert-items
+  [bm25 assertions]
+  (loop [[item & r] assertions
          bm25* bm25]
     (if item
       (recur r (index-item bm25* item))
+      bm25*)))
+
+(defn retract-terms-docs
+  "Returns updated terms map with doc-id for sparce vec removed"
+  [terms id sparse-vec]
+  ;; set of term indexes as set we'll disj until empty
+  (let [retract-idxs (reduce #(conj %1 (first %2)) #{} sparse-vec)]
+    ;; iterate over terms until we retract all items
+    (loop [[[term-str term-map] & r] terms
+           retract-idxs retract-idxs
+           terms        (transient terms)]
+      (if (retract-idxs (:idx term-map)) ;; matches one of our retraction items?
+        (let [retract-idxs* (disj retract-idxs (:idx term-map))
+              terms*        (assoc! terms term-str (update term-map :items disj id))]
+          (if (empty? retract-idxs*) ;; no more restriction items, return updated terms map
+            (persistent! terms*)
+            (recur r retract-idxs* terms*)))
+        (recur r retract-idxs terms)))))
+
+(defn- retract-item
+  [{:keys [avg-length item-count vectors terms] :as bm25} item]
+  (let [id          (get item "@id")
+        v           (get vectors id)
+        terms*      (retract-terms-docs terms id v)
+        vectors*    (dissoc vectors id)
+        doc-len     (reduce
+                     (fn [acc vec-tuple]
+                       (+ acc (second vec-tuple)))
+                     0
+                     v)
+        total-len   (* avg-length item-count)
+        total-len*  (- total-len doc-len)
+        item-count* (dec item-count)
+        avg-length* (/ total-len* item-count*)]
+    (assoc bm25 :item-count item-count*
+                :avg-length avg-length*
+                :vectors vectors*
+                :terms terms*)))
+
+(defn retract-items
+  [bm25 retractions]
+  (loop [[item & r] retractions
+         bm25* bm25]
+    (if item
+      (recur r (retract-item bm25* item))
       bm25*)))

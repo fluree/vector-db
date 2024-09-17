@@ -2,13 +2,18 @@
   (:require [fluree.vector.bm25.stemmer :as stm]
             [fluree.vector.bm25.stop-words :as sw]
             [fluree.vector.bm25.search :as search]
-            [fluree.vector.bm25.index :as index]))
+            [fluree.vector.bm25.index :as index])
+  (:refer-clojure :exclude [update]))
 
 ;; https://en.wikipedia.org/wiki/Okapi_BM25
 
-(defn index
-  [bm25 new-items]
-  (index/index-items bm25 new-items))
+(defn update
+  ([bm25 assertions]
+   (update bm25 assertions nil))
+  ([bm25 assertions retractions]
+   (-> bm25
+       (index/retract-items retractions)
+       (index/assert-items assertions))))
 
 (defn search
   [bm25 query]
